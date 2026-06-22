@@ -51,7 +51,11 @@ function doPost(e) {
       ''  // Betalad — fylls i manuellt
     ];
 
+    var newRow = sheet.getLastRow() + 1;
     sheet.appendRow(row);
+
+    // Sätt conditional formatting-regel för hela raden (grön när Betalad = "JA")
+    // Körs en gång via onEdit-triggern — se funktionen nedan
 
     // Skicka e-postavisering
     skickaNotis(data);
@@ -112,6 +116,29 @@ function skickaNotis(data) {
 function formatProd(name, qty) {
   if (!qty || qty === 0) return null;
   return name + ': ' + qty + ' st';
+}
+
+// ═══════════════════════════════════════════════════════════════
+// onEdit-trigger: färgar raden grön när du skriver "JA" i Betalad-kolumnen
+// Installera: Triggers → + Lägg till trigger → onEdit, From spreadsheet, On edit
+// ═══════════════════════════════════════════════════════════════
+function onEdit(e) {
+  var sheet = e.source.getActiveSheet();
+  var range = e.range;
+  var betaladCol = HEADERS.indexOf('Betalad (✓)') + 1; // kolumnnummer
+
+  if (range.getColumn() !== betaladCol || range.getRow() <= 1) return;
+
+  var val = range.getValue().toString().trim().toUpperCase();
+  var rowRange = sheet.getRange(range.getRow(), 1, 1, HEADERS.length);
+
+  if (val === 'JA' || val === '✓' || val === 'X') {
+    rowRange.setBackground('#b7e1cd'); // grön
+    rowRange.setFontColor('#174924');
+  } else {
+    rowRange.setBackground(null); // återställ
+    rowRange.setFontColor(null);
+  }
 }
 
 // Testfunktion — kör denna manuellt för att testa att allt fungerar

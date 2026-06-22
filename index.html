@@ -301,15 +301,18 @@
   <h2 class="step-title">Granska &amp; beställ</h2>
   <p class="step-sub">Kontrollera att allt stämmer</p>
   <div class="summary-card">
-    <div class="summary-card-title">Produkter</div>
+    <div class="summary-card-title">Produkter per leverans</div>
     <div id="summaryProducts"></div>
-    <div class="summary-row divider"><span class="sr-label">Delsumma</span><span id="summarySubtotal"></span></div>
-    <div class="summary-row"><span class="sr-label">Leveransavgift</span><span>15 kr</span></div>
+    <div class="summary-row divider"><span class="sr-label">Produkter</span><span id="summarySubtotal"></span></div>
+  </div>
+  <div class="summary-card">
+    <div class="summary-card-title">Leveransdagar</div>
+    <div id="summaryDates"></div>
+    <div class="summary-row divider" style="font-size:12px;color:var(--mid)"><span id="summaryLevCount"></span></div>
     <div class="summary-row total"><span>Totalt att swisha</span><span id="summaryTotal"></span></div>
   </div>
   <div class="summary-card">
     <div class="summary-card-title">Leveransinfo</div>
-    <div class="summary-row"><span class="sr-label">Leveransdag</span><span id="summaryDate" style="text-align:right"></span></div>
     <div class="summary-row"><span class="sr-label">Adress</span><span id="summaryAddr" style="text-align:right;max-width:60%"></span></div>
     <div class="summary-row"><span class="sr-label">Namn</span><span id="summaryNamn"></span></div>
     <div class="summary-row"><span class="sr-label">Mobil</span><span id="summaryMobil"></span></div>
@@ -339,9 +342,13 @@
     Ställ gärna ut en spann eller låda med lock vid dörren — skyddar mot fåglarna. Vi levererar från <strong>kl 08:00</strong>, exakt tid beror på antal leveranser den dagen.
   </div>
   <div class="summary-card" style="text-align:left">
-    <div class="summary-card-title">Din beställning</div>
+    <div class="summary-card-title">Produkter per leverans</div>
     <div id="confProducts"></div>
-    <div class="summary-row divider"><span class="sr-label">Leveransdag</span><span id="confDate"></span></div>
+  </div>
+  <div class="summary-card" style="text-align:left">
+    <div class="summary-card-title">Leveransdagar &amp; ordernr</div>
+    <div id="confDates"></div>
+    <div class="summary-row divider total"><span>Totalt</span><span id="confTotal"></span></div>
     <div class="summary-row"><span class="sr-label">Adress</span><span id="confAddr"></span></div>
   </div>
   <p class="order-id" id="confOrderId"></p>
@@ -373,7 +380,7 @@
     { id: 'kardemummabulle', name: 'Kardemummabulle',    price: 34 },
   ];
 
-  const state = { quantities: {}, selectedDate: null, selectedDateLabel: '', areaType: null, address: '', namn: '', mobil: '', note: '' };
+  const state = { quantities: {}, selectedDates: [], areaType: null, address: '', namn: '', mobil: '', note: '' };
   PRODUCTS.forEach(p => state.quantities[p.id] = 0);
   let currentStep = 1;
 
@@ -419,14 +426,17 @@
   function toStep2() { if (calcSubtotal() > 0) goTo(2); }
 
   function selectDate(el) {
-    document.querySelectorAll('.date-btn').forEach(b => b.classList.remove('selected'));
-    el.classList.add('selected');
-    state.selectedDate = el.dataset.date;
-    state.selectedDateLabel = el.dataset.label;
-    document.getElementById('dateBtn').disabled = false;
+    const date = el.dataset.date, label = el.dataset.label;
+    const idx = state.selectedDates.findIndex(d => d.date === date);
+    if (idx >= 0) { state.selectedDates.splice(idx, 1); el.classList.remove('selected'); }
+    else { state.selectedDates.push({ date, label }); el.classList.add('selected'); }
+    const n = state.selectedDates.length;
+    const btn = document.getElementById('dateBtn');
+    btn.disabled = n === 0;
+    btn.textContent = n > 0 ? 'Välj adress — ' + n + ' dag' + (n > 1 ? 'ar' : '') + ' →' : 'Välj adress →';
   }
 
-  function toStep3() { if (state.selectedDate) goTo(3); }
+  function toStep3() { if (state.selectedDates.length > 0) goTo(3); }
 
   function selectAreaType(type) {
     state.areaType = type;
@@ -467,27 +477,40 @@
   function toStep5() { state.note = document.getElementById('inp-note').value.trim(); goTo(5); }
 
   function renderSummary() {
-    const sub = calcSubtotal(), total = sub + 15;
+    const sub = calcSubtotal();
+    const n = state.selectedDates.length;
+    const total = (sub + 15) * n;
     let html = '';
     PRODUCTS.forEach(p => { const q = state.quantities[p.id] || 0; if (q > 0) html += '<div class="summary-row"><span>' + p.name + ' × ' + q + '</span><span>' + (p.price * q) + ' kr</span></div>'; });
     document.getElementById('summaryProducts').innerHTML = html;
     document.getElementById('summarySubtotal').textContent = sub + ' kr';
+    let datesHtml = '';
+    state.selectedDates.forEach(d => { datesHtml += '<div class="summary-row"><span>' + d.label + '</span><span>+15 kr</span></div>'; });
+    document.getElementById('summaryDates').innerHTML = datesHtml;
+    document.getElementById('summaryLevCount').textContent = n + ' leverans' + (n > 1 ? 'er' : '') + ' × (produkter + 15 kr)';
     document.getElementById('summaryTotal').textContent = total + ' kr';
-    document.getElementById('summaryDate').textContent = state.selectedDateLabel;
     document.getElementById('summaryAddr').textContent = state.address;
     document.getElementById('summaryNamn').textContent = state.namn;
     document.getElementById('summaryMobil').textContent = state.mobil;
   }
 
   function submitOrder() {
-    const orderId = 'LFK-' + Date.now().toString(36).toUpperCase();
-    const sub = calcSubtotal(), total = sub + 15;
-    const payload = { orderId, timestamp: new Date().toISOString(), namn: state.namn, mobil: state.mobil, note: state.note, leveransdag: state.selectedDate, leveransdagLabel: state.selectedDateLabel, adress: state.address, subtotal: sub, leveransavgift: 15, total };
-    PRODUCTS.forEach(p => { payload[p.id] = state.quantities[p.id] || 0; });
+    const baseId = 'LFK-' + Date.now().toString(36).toUpperCase();
+    const sub = calcSubtotal();
+    const n = state.selectedDates.length;
+    const totalAll = (sub + 15) * n;
+    const payloads = state.selectedDates.map((d, i) => {
+      const orderId = n > 1 ? baseId + '-' + (i + 1) : baseId;
+      const payload = { orderId, timestamp: new Date().toISOString(), namn: state.namn, mobil: state.mobil, note: state.note, leveransdag: d.date, leveransdagLabel: d.label, adress: state.address, subtotal: sub, leveransavgift: 15, total: sub + 15 };
+      PRODUCTS.forEach(p => { payload[p.id] = state.quantities[p.id] || 0; });
+      return payload;
+    });
     document.getElementById('loadingOverlay').classList.add('active');
-    fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
-      .then(() => showConfirmation(payload))
-      .catch(() => showConfirmation(payload));
+    Promise.all(payloads.map(p =>
+      fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(p) })
+        .catch(() => {})
+    )).then(() => showConfirmation(payloads, totalAll))
+      .catch(() => showConfirmation(payloads, totalAll));
   }
 
   function generateSwishQR(amount, orderId) {
@@ -511,22 +534,28 @@
     document.getElementById('swishQrWrap').style.display = 'block';
   }
 
-  function showConfirmation(data) {
+  function showConfirmation(payloads, totalAll) {
     document.getElementById('loadingOverlay').classList.remove('active');
     document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
     document.getElementById('progressBar').style.display = 'none';
     document.getElementById('cartBar').style.display = 'none';
     document.getElementById('confSwishNr').textContent = SWISH_NUMBER;
-    document.getElementById('confAmount').textContent = data.total + ' kr';
-    generateSwishQR(data.total, data.orderId);
+    document.getElementById('confAmount').textContent = totalAll + ' kr';
+    const first = payloads[0];
+    const baseId = payloads.length > 1 ? first.orderId.replace(/-1$/, '') : first.orderId;
+    generateSwishQR(totalAll, baseId);
+    // Produkter
     let ph = '';
-    PRODUCTS.forEach(p => { const q = data[p.id]; if (q > 0) ph += '<div class="summary-row"><span>' + p.name + ' × ' + q + '</span><span>' + (p.price * q) + ' kr</span></div>'; });
-    ph += '<div class="summary-row divider"><span class="sr-label">Leveransavgift</span><span>15 kr</span></div>';
-    ph += '<div class="summary-row total"><span>Totalt</span><span>' + data.total + ' kr</span></div>';
+    PRODUCTS.forEach(p => { const q = first[p.id]; if (q > 0) ph += '<div class="summary-row"><span>' + p.name + ' × ' + q + '</span><span>' + (p.price * q) + ' kr</span></div>'; });
+    ph += '<div class="summary-row divider"><span class="sr-label">Per leverans</span><span>' + (first.subtotal + 15) + ' kr</span></div>';
     document.getElementById('confProducts').innerHTML = ph;
-    document.getElementById('confDate').textContent = data.leveransdagLabel;
-    document.getElementById('confAddr').textContent = data.adress;
-    document.getElementById('confOrderId').textContent = 'Ordernr: ' + data.orderId;
+    // Datum
+    let dh = '';
+    payloads.forEach(p => { dh += '<div class="summary-row"><span>' + p.leveransdagLabel + '</span><span>' + p.orderId + '</span></div>'; });
+    document.getElementById('confDates').innerHTML = dh;
+    document.getElementById('confTotal').textContent = totalAll + ' kr (' + payloads.length + ' leverans' + (payloads.length > 1 ? 'er' : '') + ')';
+    document.getElementById('confAddr').textContent = first.adress;
+    document.getElementById('confOrderId').textContent = 'Order: ' + baseId;
     document.getElementById('confirmation').classList.add('active');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
