@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Leveranz från Kranz – Beställ nybakat bröd</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;0,700;1,400&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --cream: #FAFAF5; --warm: #8B6F55; --dark: #2A1A10;
+      --mid: #6B4F3A; --light: #D9CCBC; --white: #ffffff; --swish: #2F4399;
+    }
+    html { scroll-behavior: smooth; }
+    body { background: var(--cream); color: var(--dark); font-family: 'Poppins', sans-serif; font-weight: 400; min-height: 100vh; -webkit-font-smoothing: antialiased; }
+    header { background: var(--cream); border-bottom: 1px solid var(--light); padding: 18px 20px 14px; text-align: center; }
+    header h1 { font-family: 'Lora', serif; font-size: 22px; font-weight: 700; color: var(--dark); letter-spacing: 0.4px; }
+    header p { font-size: 13px; color: var(--mid); font-style: italic; margin-top: 3px; font-weight: 300; }
+    .progress { display: flex; justify-content: center; align-items: center; gap: 6px; padding: 12px 20px; background: var(--cream); border-bottom: 1px solid var(--light); }
+    .ps { width: 8px; height: 8px; border-radius: 50%; background: var(--light); transition: all 0.3s; }
+    .ps.active { background: var(--warm); transform: scale(1.3); }
+    .ps.done { background: var(--mid); }
+    .progress-label { font-size: 12px; color: var(--mid); margin-left: 8px; }
+    .step { display: none; padding: 20px 20px 100px; max-width: 520px; margin: 0 auto; }
+    .step.active { display: block; }
+    .step-title { font-family: 'Lora', serif; font-size: 21px; color: var(--dark); margin-bottom: 4px; }
+    .step-sub { font-size: 13px; color: var(--mid); font-weight: 300; margin-bottom: 22px; }
+    .btn-back { display: inline-flex; align-items: center; gap: 4px; background: none; border: none; color: var(--mid); font-family: 'Poppins', sans-serif; font-size: 14px; cursor: pointer; padding: 0; margin-bottom: 18px; }
+    .btn-back:hover { color: var(--dark); }
+    .product-group { margin-bottom: 22px; }
+    .product-group-title { font-size: 11px; font-weight: 600; letter-spacing: 1.2px; text-transform: uppercase; color: var(--warm); padding-bottom: 7px; border-bottom: 1px solid var(--light); margin-bottom: 4px; }
+    .product-row { display: flex; align-items: center; padding: 11px 0; border-bottom: 1px solid var(--light); gap: 10px; }
+    .product-info { flex: 1; min-width: 0; }
+    .product-name { font-size: 15px; font-weight: 500; color: var(--dark); }
+    .product-desc { font-size: 12px; color: var(--mid); font-weight: 300; margin-top: 1px; }
+    .product-price { font-size: 13px; color: var(--warm); font-weight: 600; white-space: nowrap; flex-shrink: 0; }
+    .stepper { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+    .stepper button { width: 34px; height: 34px; border-radius: 50%; border: 1.5px solid var(--warm); background: var(--white); color: var(--warm); font-size: 20px; cursor: pointer; display: flex; align-items: center; justify-content: center; line-height: 1; transition: all 0.15s; -webkit-tap-highlight-color: transparent; }
+    .stepper button:active { background: var(--warm); color: var(--white); }
+    .stepper .qty { font-size: 17px; font-weight: 600; min-width: 22px; text-align: center; color: var(--dark); }
+    .cart-bar { position: fixed; bottom: 0; left: 0; right: 0; background: var(--warm); color: var(--white); padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; z-index: 100; box-shadow: 0 -2px 12px rgba(0,0,0,0.12); }
+    .cart-info .cart-label { font-size: 12px; font-weight: 300; opacity: 0.85; }
+    .cart-info .cart-total { font-size: 18px; font-weight: 600; }
+    .cart-btn { background: var(--white); color: var(--warm); border: none; border-radius: 8px; padding: 11px 18px; font-family: 'Poppins', sans-serif; font-size: 15px; font-weight: 600; cursor: pointer; white-space: nowrap; transition: background 0.15s; }
+    .cart-btn:hover { background: var(--cream); }
+    .cart-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .week-group { margin-bottom: 20px; }
+    .week-label { font-size: 11px; font-weight: 600; letter-spacing: 1.2px; text-transform: uppercase; color: var(--warm); margin-bottom: 8px; }
+    .date-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .date-btn { padding: 13px 8px; border: 1.5px solid var(--light); border-radius: 10px; background: var(--white); text-align: center; cursor: pointer; transition: all 0.2s; -webkit-tap-highlight-color: transparent; }
+    .date-btn:hover { border-color: var(--warm); }
+    .date-btn.selected { border-color: var(--warm); background: var(--warm); color: var(--white); }
+    .date-btn .day-name { font-size: 13px; font-weight: 600; }
+    .date-btn .day-date { font-size: 12px; opacity: 0.75; margin-top: 1px; }
+    .area-tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 18px; }
+    .area-tab { padding: 14px 8px; border: 1.5px solid var(--light); border-radius: 10px; background: var(--white); text-align: center; cursor: pointer; font-size: 14px; font-weight: 500; color: var(--dark); transition: all 0.2s; -webkit-tap-highlight-color: transparent; }
+    .area-tab.selected { border-color: var(--warm); background: var(--warm); color: var(--white); }
+    .area-tab .tab-icon { font-size: 24px; display: block; margin-bottom: 5px; }
+    .form-group { margin-bottom: 14px; }
+    label { display: block; font-size: 13px; font-weight: 500; color: var(--mid); margin-bottom: 5px; }
+    select, input[type="text"], input[type="tel"] { width: 100%; padding: 13px 14px; border: 1.5px solid var(--light); border-radius: 10px; background: var(--white); font-family: 'Poppins', sans-serif; font-size: 16px; color: var(--dark); outline: none; transition: border-color 0.2s; appearance: none; -webkit-appearance: none; }
+    select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238B6F55' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 14px center; padding-right: 38px; }
+    select:focus, input:focus { border-color: var(--warm); }
+    .summary-card { background: var(--white); border: 1px solid var(--light); border-radius: 12px; padding: 16px; margin-bottom: 14px; }
+    .summary-card-title { font-size: 11px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; color: var(--warm); margin-bottom: 10px; }
+    .summary-row { display: flex; justify-content: space-between; align-items: baseline; padding: 5px 0; font-size: 14px; color: var(--dark); }
+    .summary-row .sr-label { color: var(--mid); font-weight: 300; }
+    .summary-row.divider { border-top: 1px solid var(--light); margin-top: 6px; padding-top: 10px; }
+    .summary-row.total { font-weight: 700; font-size: 17px; }
+    .info-box { background: #F5EFE6; border-left: 3px solid var(--warm); padding: 11px 14px; border-radius: 0 8px 8px 0; font-size: 13px; color: var(--mid); margin-bottom: 14px; line-height: 1.55; }
+    .info-box strong { color: var(--dark); display: block; margin-bottom: 2px; }
+    .notice-box { background: #FFF8E6; border: 1px solid #E5D08A; border-radius: 10px; padding: 13px 15px; font-size: 13px; color: var(--dark); margin-bottom: 14px; line-height: 1.55; }
+    .notice-title { font-weight: 600; margin-bottom: 4px; }
+    .btn-primary { width: 100%; padding: 16px; background: var(--warm); color: var(--white); border: none; border-radius: 10px; font-family: 'Poppins', sans-serif; font-size: 16px; font-weight: 600; cursor: pointer; margin-top: 4px; transition: background 0.2s; -webkit-tap-highlight-color: transparent; }
+    .btn-primary:hover { background: var(--mid); }
+    .btn-primary:disabled { background: var(--light); color: var(--mid); cursor: not-allowed; }
+    #confirmation { display: none; padding: 30px 20px 60px; max-width: 520px; margin: 0 auto; text-align: center; }
+    #confirmation.active { display: block; }
+    .confirm-icon { font-size: 56px; margin-bottom: 12px; }
+    .confirm-title { font-family: 'Lora', serif; font-size: 26px; color: var(--dark); margin-bottom: 6px; }
+    .confirm-sub { font-size: 15px; color: var(--mid); font-weight: 300; margin-bottom: 26px; line-height: 1.5; }
+    .swish-card { background: var(--swish); color: var(--white); border-radius: 14px; padding: 22px 20px; margin-bottom: 16px; }
+    .swish-logo { font-size: 11px; font-weight: 700; letter-spacing: 2px; opacity: 0.7; margin-bottom: 6px; }
+    .swish-to { font-size: 13px; opacity: 0.85; }
+    .swish-number { font-size: 28px; font-weight: 700; letter-spacing: 3px; margin: 4px 0 14px; }
+    .swish-amount-label { font-size: 13px; opacity: 0.85; margin-bottom: 4px; }
+    .swish-amount { font-size: 38px; font-weight: 700; }
+    .swish-deadline { margin-top: 16px; font-size: 13px; background: rgba(255,255,255,0.15); border-radius: 8px; padding: 10px 14px; line-height: 1.5; }
+    .swish-deadline strong { display: block; margin-bottom: 2px; }
+    .order-id { font-size: 12px; color: var(--mid); margin-top: 10px; font-weight: 300; }
+    .loading-overlay { display: none; position: fixed; inset: 0; background: rgba(250,250,245,0.92); z-index: 200; flex-direction: column; align-items: center; justify-content: center; gap: 14px; }
+    .loading-overlay.active { display: flex; }
+    .spinner { width: 40px; height: 40px; border: 3px solid var(--light); border-top-color: var(--warm); border-radius: 50%; animation: spin 0.8s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .error-msg { font-size: 13px; color: #c0392b; padding: 4px 2px; display: none; }
+    .error-msg.visible { display: block; }
+    .hidden { display: none !important; }
+    @media (min-width: 540px) { header h1 { font-size: 26px; } .step { padding: 28px 28px 100px; } #confirmation { padding: 40px 28px 60px; } }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>Leveranz från Kranz</h1>
+  <p>Nybakta bullar från Krantz Brödbod — hemleverans direkt till dörren</p>
+</header>
+
+<div class="progress" id="progressBar">
+  <div class="ps active" id="ps1"></div>
+  <div class="ps" id="ps2"></div>
+  <div class="ps" id="ps3"></div>
+  <div class="ps" id="ps4"></div>
+  <div class="ps" id="ps5"></div>
+  <span class="progress-label" id="progressLabel">Steg 1 av 5</span>
+</div>
+
+<!-- STEG 1 — SORTIMENT -->
+<div class="step active" id="step1">
+  <h2 class="step-title">Välj sortiment</h2>
+  <p class="step-sub">Välj antal av varje produkt du vill beställa</p>
+
+  <div class="product-group">
+    <div class="product-group-title">Frallor — 14 kr/st</div>
+    <div class="product-row">
+      <div class="product-info"><div class="product-name">Småfranska</div><div class="product-desc">Ljus fralla toppad med vallmofrö</div></div>
+      <div class="product-price">14 kr</div>
+      <div class="stepper"><button onclick="changeQty('smafranska',-1)">−</button><span class="qty" id="qty-smafranska">0</span><button onclick="changeQty('smafranska',1)">+</button></div>
+    </div>
+    <div class="product-row">
+      <div class="product-info"><div class="product-name">Ostfralla</div><div class="product-desc">Ljus fralla toppad med ost</div></div>
+      <div class="product-price">14 kr</div>
+      <div class="stepper"><button onclick="changeQty('ostfralla',-1)">−</button><span class="qty" id="qty-ostfralla">0</span><button onclick="changeQty('ostfralla',1)">+</button></div>
+    </div>
+    <div class="product-row">
+      <div class="product-info"><div class="product-name">Källarfranska</div><div class="product-desc">Ljus mjuk fralla toppad med mjöl</div></div>
+      <div class="product-price">14 kr</div>
+      <div class="stepper"><button onclick="changeQty('kallarfranska',-1)">−</button><span class="qty" id="qty-kallarfranska">0</span><button onclick="changeQty('kallarfranska',1)">+</button></div>
+    </div>
+    <div class="product-row">
+      <div class="product-info"><div class="product-name">Solros</div><div class="product-desc">Grov fralla toppad med solrosfrö</div></div>
+      <div class="product-price">14 kr</div>
+      <div class="stepper"><button onclick="changeQty('solros',-1)">−</button><span class="qty" id="qty-solros">0</span><button onclick="changeQty('solros',1)">+</button></div>
+    </div>
+  </div>
+
+  <div class="product-group">
+    <div class="product-group-title">Surdegsfrallor — 18 kr/st</div>
+    <div class="product-row">
+      <div class="product-info"><div class="product-name">Surdegsfralla ljus</div><div class="product-desc">Dagens ljusa surdegsfralla</div></div>
+      <div class="product-price">18 kr</div>
+      <div class="stepper"><button onclick="changeQty('surdeg-ljus',-1)">−</button><span class="qty" id="qty-surdeg-ljus">0</span><button onclick="changeQty('surdeg-ljus',1)">+</button></div>
+    </div>
+    <div class="product-row">
+      <div class="product-info"><div class="product-name">Surdegsfralla mörk</div><div class="product-desc">Dagens mörka surdegsfralla</div></div>
+      <div class="product-price">18 kr</div>
+      <div class="stepper"><button onclick="changeQty('surdeg-mork',-1)">−</button><span class="qty" id="qty-surdeg-mork">0</span><button onclick="changeQty('surdeg-mork',1)">+</button></div>
+    </div>
+  </div>
+
+  <div class="product-group">
+    <div class="product-group-title">Vetemjölsbullar — 34 kr/st</div>
+    <div class="product-row">
+      <div class="product-info"><div class="product-name">Kanelbulle</div><div class="product-desc">Vetebulle med smör och kanelfyllning</div></div>
+      <div class="product-price">34 kr</div>
+      <div class="stepper"><button onclick="changeQty('kanelbulle',-1)">−</button><span class="qty" id="qty-kanelbulle">0</span><button onclick="changeQty('kanelbulle',1)">+</button></div>
+    </div>
+    <div class="product-row">
+      <div class="product-info"><div class="product-name">Kardemummabulle</div><div class="product-desc">Vetebulle med smör, mandelmassa och kardemummafyllning</div></div>
+      <div class="product-price">34 kr</div>
+      <div class="stepper"><button onclick="changeQty('kardemummabulle',-1)">−</button><span class="qty" id="qty-kardemummabulle">0</span><button onclick="changeQty('kardemummabulle',1)">+</button></div>
+    </div>
+  </div>
+
+  <div class="info-box"><strong>Leveransavgift 15 kr</strong>tillkommer per beställning, oavsett storlek.</div>
+</div>
+
+<div class="cart-bar" id="cartBar">
+  <div class="cart-info">
+    <div class="cart-label">Valda produkter (exkl. leverans)</div>
+    <div class="cart-total" id="cartTotal">0 kr</div>
+  </div>
+  <button class="cart-btn" id="cartBtn" disabled onclick="toStep2()">Välj datum →</button>
+</div>
+
+<!-- STEG 2 — DATUM -->
+<div class="step" id="step2">
+  <button class="btn-back" onclick="goTo(1)">← Tillbaka</button>
+  <h2 class="step-title">Välj leveransdag</h2>
+  <p class="step-sub">Vi levererar torsdag–söndag under tre veckor</p>
+
+  <div class="week-group">
+    <div class="week-label">Vecka 28 — juli</div>
+    <div class="date-grid">
+      <div class="date-btn" data-date="2026-07-09" data-label="Torsdag 9 juli" onclick="selectDate(this)"><div class="day-name">Torsdag</div><div class="day-date">9 juli</div></div>
+      <div class="date-btn" data-date="2026-07-10" data-label="Fredag 10 juli" onclick="selectDate(this)"><div class="day-name">Fredag</div><div class="day-date">10 juli</div></div>
+      <div class="date-btn" data-date="2026-07-11" data-label="Lördag 11 juli" onclick="selectDate(this)"><div class="day-name">Lördag</div><div class="day-date">11 juli</div></div>
+      <div class="date-btn" data-date="2026-07-12" data-label="Söndag 12 juli" onclick="selectDate(this)"><div class="day-name">Söndag</div><div class="day-date">12 juli</div></div>
+    </div>
+  </div>
+  <div class="week-group">
+    <div class="week-label">Vecka 30 — juli</div>
+    <div class="date-grid">
+      <div class="date-btn" data-date="2026-07-23" data-label="Torsdag 23 juli" onclick="selectDate(this)"><div class="day-name">Torsdag</div><div class="day-date">23 juli</div></div>
+      <div class="date-btn" data-date="2026-07-24" data-label="Fredag 24 juli" onclick="selectDate(this)"><div class="day-name">Fredag</div><div class="day-date">24 juli</div></div>
+      <div class="date-btn" data-date="2026-07-25" data-label="Lördag 25 juli" onclick="selectDate(this)"><div class="day-name">Lördag</div><div class="day-date">25 juli</div></div>
+      <div class="date-btn" data-date="2026-07-26" data-label="Söndag 26 juli" onclick="selectDate(this)"><div class="day-name">Söndag</div><div class="day-date">26 juli</div></div>
+    </div>
+  </div>
+  <div class="week-group">
+    <div class="week-label">Vecka 31 — juli / aug</div>
+    <div class="date-grid">
+      <div class="date-btn" data-date="2026-07-30" data-label="Torsdag 30 juli" onclick="selectDate(this)"><div class="day-name">Torsdag</div><div class="day-date">30 juli</div></div>
+      <div class="date-btn" data-date="2026-07-31" data-label="Fredag 31 juli" onclick="selectDate(this)"><div class="day-name">Fredag</div><div class="day-date">31 juli</div></div>
+      <div class="date-btn" data-date="2026-08-01" data-label="Lördag 1 aug" onclick="selectDate(this)"><div class="day-name">Lördag</div><div class="day-date">1 aug</div></div>
+      <div class="date-btn" data-date="2026-08-02" data-label="Söndag 2 aug" onclick="selectDate(this)"><div class="day-name">Söndag</div><div class="day-date">2 aug</div></div>
+    </div>
+  </div>
+
+  <div class="info-box"><strong>Vi levererar från kl 08:00</strong>Exakt tid beror på hur många leveranser det är den dagen.</div>
+  <button class="btn-primary" id="dateBtn" disabled onclick="toStep3()">Välj adress →</button>
+</div>
+
+<!-- STEG 3 — ADRESS -->
+<div class="step" id="step3">
+  <button class="btn-back" onclick="goTo(2)">← Tillbaka</button>
+  <h2 class="step-title">Leveransadress</h2>
+  <p class="step-sub">Välj var du vill ha leveransen</p>
+
+  <div class="area-tabs">
+    <div class="area-tab" id="tab-stuga" onclick="selectAreaType('stuga')"><span class="tab-icon">🏠</span>Stugområde</div>
+    <div class="area-tab" id="tab-gata" onclick="selectAreaType('gata')"><span class="tab-icon">🏡</span>Gatuadress</div>
+  </div>
+
+  <div id="fields-stuga" class="hidden">
+    <div class="form-group">
+      <label for="sel-stuga">Stugområde</label>
+      <select id="sel-stuga" onchange="updateAddress()">
+        <option value="">Välj stugområde…</option>
+        <option>Strandhaga</option>
+        <option>Mellersta Knebildstorp</option>
+        <option>Gamla Knebildstorp</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label for="inp-stugnr">Stugnummer</label>
+      <input type="text" id="inp-stugnr" placeholder="T.ex. 12" oninput="updateAddress()">
+    </div>
+  </div>
+
+  <div id="fields-gata" class="hidden">
+    <div class="form-group">
+      <label for="sel-gata">Gata</label>
+      <select id="sel-gata" onchange="updateAddress()">
+        <option value="">Välj gata…</option>
+        <option>Gathenhielmsvägen</option>
+        <option>Simmarevägen</option>
+        <option>Kopparmöllevägen</option>
+        <option>Tångrevsvägen</option>
+        <option>Strandåkersgatan</option>
+        <option>Björkängsgatan</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label for="inp-husnr">Husnummer</label>
+      <input type="text" id="inp-husnr" placeholder="T.ex. 5" oninput="updateAddress()">
+    </div>
+  </div>
+
+  <div class="notice-box"><div class="notice-title">🪣 Tips inför leveransen</div>Det kan vara smart att ha en spann eller låda med lock ute vid dörren — så slipper du att fåglarna hinner ta bullarna!</div>
+  <button class="btn-primary" id="addrBtn" disabled onclick="toStep4()">Dina uppgifter →</button>
+</div>
+
+<!-- STEG 4 — KONTAKT -->
+<div class="step" id="step4">
+  <button class="btn-back" onclick="goTo(3)">← Tillbaka</button>
+  <h2 class="step-title">Dina uppgifter</h2>
+  <p class="step-sub">Namn och mobilnummer kopplat till Swish</p>
+  <div class="form-group">
+    <label for="inp-namn">Namn</label>
+    <input type="text" id="inp-namn" placeholder="För- och efternamn" oninput="updateContact()">
+  </div>
+  <div class="form-group">
+    <label for="inp-mobil">Mobilnummer (Swish)</label>
+    <input type="tel" id="inp-mobil" placeholder="07X XXX XX XX" oninput="updateContact()">
+    <div class="error-msg" id="err-mobil">Ange ett giltigt mobilnummer (10 siffror, börjar på 07)</div>
+  </div>
+  <div class="form-group">
+    <label for="inp-note">Meddelande (valfritt)</label>
+    <input type="text" id="inp-note" placeholder="T.ex. ring på när ni är framme">
+  </div>
+  <div class="info-box"><strong>Betala med Swish senast kl 18:00 kvällen innan</strong>Du får Swish-nummer och belopp efter att du skickat beställningen.</div>
+  <button class="btn-primary" id="contactBtn" disabled onclick="toStep5()">Granska beställning →</button>
+</div>
+
+<!-- STEG 5 — GRANSKA -->
+<div class="step" id="step5">
+  <button class="btn-back" onclick="goTo(4)">← Tillbaka</button>
+  <h2 class="step-title">Granska &amp; beställ</h2>
+  <p class="step-sub">Kontrollera att allt stämmer</p>
+  <div class="summary-card">
+    <div class="summary-card-title">Produkter</div>
+    <div id="summaryProducts"></div>
+    <div class="summary-row divider"><span class="sr-label">Delsumma</span><span id="summarySubtotal"></span></div>
+    <div class="summary-row"><span class="sr-label">Leveransavgift</span><span>15 kr</span></div>
+    <div class="summary-row total"><span>Totalt att swisha</span><span id="summaryTotal"></span></div>
+  </div>
+  <div class="summary-card">
+    <div class="summary-card-title">Leveransinfo</div>
+    <div class="summary-row"><span class="sr-label">Leveransdag</span><span id="summaryDate" style="text-align:right"></span></div>
+    <div class="summary-row"><span class="sr-label">Adress</span><span id="summaryAddr" style="text-align:right;max-width:60%"></span></div>
+    <div class="summary-row"><span class="sr-label">Namn</span><span id="summaryNamn"></span></div>
+    <div class="summary-row"><span class="sr-label">Mobil</span><span id="summaryMobil"></span></div>
+  </div>
+  <div class="notice-box"><div class="notice-title">💳 Betalning med Swish</div>Swisha <strong>senast kl 18:00 kvällen innan leverans</strong> — betalningsinformation visas på nästa sida.</div>
+  <button class="btn-primary" onclick="submitOrder()">Skicka beställning →</button>
+</div>
+
+<!-- BEKRÄFTELSE -->
+<div id="confirmation">
+  <div class="confirm-icon">🎉</div>
+  <h2 class="confirm-title">Beställning mottagen!</h2>
+  <p class="confirm-sub">Swisha till numret nedan senast kl 18:00 kvällen<br>innan din leveransdag — så ses vi!</p>
+  <div class="swish-card">
+    <div class="swish-logo">SWISH</div>
+    <div class="swish-to">Swisha till</div>
+    <div class="swish-number" id="confSwishNr">— — —</div>
+    <div class="swish-amount-label">Belopp att betala</div>
+    <div class="swish-amount" id="confAmount">— kr</div>
+    <div class="swish-deadline"><strong>⏰ Betala senast kl 18:00</strong>kvällen innan din leveransdag</div>
+  </div>
+  <div class="notice-box" style="text-align:left">
+    <div class="notice-title">🪣 Kom ihåg!</div>
+    Ställ gärna ut en spann eller låda med lock vid dörren — skyddar mot fåglarna. Vi levererar från <strong>kl 08:00</strong>, exakt tid beror på antal leveranser den dagen.
+  </div>
+  <div class="summary-card" style="text-align:left">
+    <div class="summary-card-title">Din beställning</div>
+    <div id="confProducts"></div>
+    <div class="summary-row divider"><span class="sr-label">Leveransdag</span><span id="confDate"></span></div>
+    <div class="summary-row"><span class="sr-label">Adress</span><span id="confAddr"></span></div>
+  </div>
+  <p class="order-id" id="confOrderId"></p>
+  <p style="font-size:13px;color:var(--mid);margin-top:24px;line-height:1.7;font-weight:300">
+    Frågor? Ring oss!<br>
+    <strong style="color:var(--dark)">Mattias Sjödahl — 072-182 69 94</strong><br>
+    <strong style="color:var(--dark)">Noomi Sjödahl — 079-322 61 26</strong>
+  </p>
+</div>
+
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="spinner"></div>
+  <p style="color:var(--mid);font-size:14px">Skickar beställning…</p>
+</div>
+
+<script>
+  // ⚙️ KONFIGURATION — fyll i dessa innan publicering
+  const SWISH_NUMBER = '0793226126';
+  const SCRIPT_URL   = 'https://script.google.com/macros/s/AKfycbxnBmuPqWnKwsC4g6xhudUY2KCYAIyyZvZwUgp4drxhCuDhg-7tWggrzzoZnyP7R4j2nw/exec';
+
+  const PRODUCTS = [
+    { id: 'smafranska',      name: 'Småfranska',         price: 14 },
+    { id: 'ostfralla',       name: 'Ostfralla',          price: 14 },
+    { id: 'kallarfranska',   name: 'Källarfranska',      price: 14 },
+    { id: 'solros',          name: 'Solros',             price: 14 },
+    { id: 'surdeg-ljus',     name: 'Surdegsfralla ljus', price: 18 },
+    { id: 'surdeg-mork',     name: 'Surdegsfralla mörk', price: 18 },
+    { id: 'kanelbulle',      name: 'Kanelbulle',         price: 34 },
+    { id: 'kardemummabulle', name: 'Kardemummabulle',    price: 34 },
+  ];
+
+  const state = { quantities: {}, selectedDate: null, selectedDateLabel: '', areaType: null, address: '', namn: '', mobil: '', note: '' };
+  PRODUCTS.forEach(p => state.quantities[p.id] = 0);
+  let currentStep = 1;
+
+  function goTo(n) {
+    document.getElementById('step' + currentStep).classList.remove('active');
+    document.getElementById('step' + n).classList.add('active');
+    currentStep = n;
+    updateProgress();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    document.getElementById('cartBar').style.display = (n === 1) ? 'flex' : 'none';
+    if (n === 5) renderSummary();
+  }
+
+  function updateProgress() {
+    for (let i = 1; i <= 5; i++) {
+      const el = document.getElementById('ps' + i);
+      el.className = 'ps';
+      if (i < currentStep) el.classList.add('done');
+      else if (i === currentStep) el.classList.add('active');
+    }
+    document.getElementById('progressLabel').textContent = 'Steg ' + currentStep + ' av 5';
+  }
+
+  function changeQty(id, delta) {
+    state.quantities[id] = Math.max(0, (state.quantities[id] || 0) + delta);
+    document.getElementById('qty-' + id).textContent = state.quantities[id];
+    updateCartBar();
+  }
+
+  function calcSubtotal() {
+    return PRODUCTS.reduce((sum, p) => sum + p.price * (state.quantities[p.id] || 0), 0);
+  }
+
+  function updateCartBar() {
+    const sub = calcSubtotal();
+    const items = PRODUCTS.reduce((n, p) => n + (state.quantities[p.id] || 0), 0);
+    document.getElementById('cartTotal').textContent = sub + ' kr';
+    const btn = document.getElementById('cartBtn');
+    btn.disabled = (sub === 0);
+    btn.textContent = items > 0 ? 'Välj datum (' + items + ' st) →' : 'Välj datum →';
+  }
+
+  function toStep2() { if (calcSubtotal() > 0) goTo(2); }
+
+  function selectDate(el) {
+    document.querySelectorAll('.date-btn').forEach(b => b.classList.remove('selected'));
+    el.classList.add('selected');
+    state.selectedDate = el.dataset.date;
+    state.selectedDateLabel = el.dataset.label;
+    document.getElementById('dateBtn').disabled = false;
+  }
+
+  function toStep3() { if (state.selectedDate) goTo(3); }
+
+  function selectAreaType(type) {
+    state.areaType = type;
+    document.getElementById('tab-stuga').classList.toggle('selected', type === 'stuga');
+    document.getElementById('tab-gata').classList.toggle('selected', type === 'gata');
+    document.getElementById('fields-stuga').classList.toggle('hidden', type !== 'stuga');
+    document.getElementById('fields-gata').classList.toggle('hidden', type !== 'gata');
+    if (type === 'stuga') { document.getElementById('sel-stuga').value = ''; document.getElementById('inp-stugnr').value = ''; }
+    else { document.getElementById('sel-gata').value = ''; document.getElementById('inp-husnr').value = ''; }
+    state.address = '';
+    document.getElementById('addrBtn').disabled = true;
+  }
+
+  function updateAddress() {
+    if (state.areaType === 'stuga') {
+      const omr = document.getElementById('sel-stuga').value;
+      const nr  = document.getElementById('inp-stugnr').value.trim();
+      state.address = (omr && nr) ? omr + ', stuga ' + nr : '';
+    } else if (state.areaType === 'gata') {
+      const gata = document.getElementById('sel-gata').value;
+      const nr   = document.getElementById('inp-husnr').value.trim();
+      state.address = (gata && nr) ? gata + ' ' + nr : '';
+    }
+    document.getElementById('addrBtn').disabled = !state.address;
+  }
+
+  function toStep4() { if (state.address) goTo(4); }
+
+  function updateContact() {
+    state.namn  = document.getElementById('inp-namn').value.trim();
+    state.mobil = document.getElementById('inp-mobil').value.trim();
+    const cleaned = state.mobil.replace(/[\s\-]/g, '');
+    const ok = /^07[0-9]{8}$/.test(cleaned);
+    document.getElementById('err-mobil').classList.toggle('visible', state.mobil.length > 5 && !ok);
+    document.getElementById('contactBtn').disabled = !(state.namn && ok);
+  }
+
+  function toStep5() { state.note = document.getElementById('inp-note').value.trim(); goTo(5); }
+
+  function renderSummary() {
+    const sub = calcSubtotal(), total = sub + 15;
+    let html = '';
+    PRODUCTS.forEach(p => { const q = state.quantities[p.id] || 0; if (q > 0) html += '<div class="summary-row"><span>' + p.name + ' × ' + q + '</span><span>' + (p.price * q) + ' kr</span></div>'; });
+    document.getElementById('summaryProducts').innerHTML = html;
+    document.getElementById('summarySubtotal').textContent = sub + ' kr';
+    document.getElementById('summaryTotal').textContent = total + ' kr';
+    document.getElementById('summaryDate').textContent = state.selectedDateLabel;
+    document.getElementById('summaryAddr').textContent = state.address;
+    document.getElementById('summaryNamn').textContent = state.namn;
+    document.getElementById('summaryMobil').textContent = state.mobil;
+  }
+
+  function submitOrder() {
+    const orderId = 'LFK-' + Date.now().toString(36).toUpperCase();
+    const sub = calcSubtotal(), total = sub + 15;
+    const payload = { orderId, timestamp: new Date().toISOString(), namn: state.namn, mobil: state.mobil, note: state.note, leveransdag: state.selectedDate, leveransdagLabel: state.selectedDateLabel, adress: state.address, subtotal: sub, leveransavgift: 15, total };
+    PRODUCTS.forEach(p => { payload[p.id] = state.quantities[p.id] || 0; });
+    document.getElementById('loadingOverlay').classList.add('active');
+    fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
+      .then(() => showConfirmation(payload))
+      .catch(() => showConfirmation(payload));
+  }
+
+  function showConfirmation(data) {
+    document.getElementById('loadingOverlay').classList.remove('active');
+    document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+    document.getElementById('progressBar').style.display = 'none';
+    document.getElementById('cartBar').style.display = 'none';
+    document.getElementById('confSwishNr').textContent = SWISH_NUMBER;
+    document.getElementById('confAmount').textContent = data.total + ' kr';
+    let ph = '';
+    PRODUCTS.forEach(p => { const q = data[p.id]; if (q > 0) ph += '<div class="summary-row"><span>' + p.name + ' × ' + q + '</span><span>' + (p.price * q) + ' kr</span></div>'; });
+    ph += '<div class="summary-row divider"><span class="sr-label">Leveransavgift</span><span>15 kr</span></div>';
+    ph += '<div class="summary-row total"><span>Totalt</span><span>' + data.total + ' kr</span></div>';
+    document.getElementById('confProducts').innerHTML = ph;
+    document.getElementById('confDate').textContent = data.leveransdagLabel;
+    document.getElementById('confAddr').textContent = data.adress;
+    document.getElementById('confOrderId').textContent = 'Ordernr: ' + data.orderId;
+    document.getElementById('confirmation').classList.add('active');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  updateCartBar();
+</script>
+</body>
+</html>
