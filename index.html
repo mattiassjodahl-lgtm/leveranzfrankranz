@@ -4,8 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Leveranz från Kranz – Beställ nybakat bröd</title>
+  <script>if(location.hostname==='leveranzfrankranz.se')location.replace('https://www.leveranzfrankranz.se'+location.pathname+location.search);</script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;0,700;1,400&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
@@ -323,7 +325,10 @@
   <p class="confirm-sub">Swisha till numret nedan senast kl 18:00 kvällen<br>innan din leveransdag — så ses vi!</p>
   <div class="swish-card">
     <div class="swish-logo">SWISH</div>
-    <div class="swish-to">Swisha till</div>
+    <div id="swishQrWrap" style="background:#fff;border-radius:10px;padding:12px;margin:10px auto 14px;width:fit-content;display:none">
+      <div id="swishQr"></div>
+    </div>
+    <div class="swish-to">Eller swisha manuellt till</div>
     <div class="swish-number" id="confSwishNr">— — —</div>
     <div class="swish-amount-label">Belopp att betala</div>
     <div class="swish-amount" id="confAmount">— kr</div>
@@ -485,6 +490,27 @@
       .catch(() => showConfirmation(payload));
   }
 
+  function generateSwishQR(amount, orderId) {
+    var swishData = JSON.stringify({
+      version: 1,
+      payee: { value: SWISH_NUMBER, editable: false },
+      amount: { value: amount, editable: false },
+      message: { value: orderId, editable: false }
+    });
+    var swishUrl = 'swish://payment?data=' + encodeURIComponent(swishData);
+    var qrDiv = document.getElementById('swishQr');
+    qrDiv.innerHTML = '';
+    new QRCode(qrDiv, {
+      text: swishUrl,
+      width: 180,
+      height: 180,
+      colorDark: '#2F4399',
+      colorLight: '#ffffff',
+      correctLevel: QRCode.CorrectLevel.M
+    });
+    document.getElementById('swishQrWrap').style.display = 'block';
+  }
+
   function showConfirmation(data) {
     document.getElementById('loadingOverlay').classList.remove('active');
     document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
@@ -492,6 +518,7 @@
     document.getElementById('cartBar').style.display = 'none';
     document.getElementById('confSwishNr').textContent = SWISH_NUMBER;
     document.getElementById('confAmount').textContent = data.total + ' kr';
+    generateSwishQR(data.total, data.orderId);
     let ph = '';
     PRODUCTS.forEach(p => { const q = data[p.id]; if (q > 0) ph += '<div class="summary-row"><span>' + p.name + ' × ' + q + '</span><span>' + (p.price * q) + ' kr</span></div>'; });
     ph += '<div class="summary-row divider"><span class="sr-label">Leveransavgift</span><span>15 kr</span></div>';
