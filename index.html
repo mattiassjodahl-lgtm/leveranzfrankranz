@@ -408,7 +408,7 @@
 <script>
   // ⚙️ KONFIGURATION — fyll i dessa innan publicering
   const SWISH_NUMBER = '0793226126';
-  const SCRIPT_URL   = 'https://script.google.com/macros/s/AKfycbxnBmuPqWnKwsC4g6xhudUY2KCYAIyyZvZwUgp4drxhCuDhg-7tWggrzzoZnyP7R4j2nw/exec';
+  const SCRIPT_URL   = 'https://script.google.com/macros/s/AKfycbzzMdeLlwfu7mPp24IlEpxTAKvcJhY3-zEm3hS-oVd5TgjiZrs-knbSvr9Fevur6brGUg/exec';
 
   const PRODUCTS = [
     { id: 'smafranska',      name: 'Småfranska',         price: 14 },
@@ -430,6 +430,7 @@
     document.getElementById('step' + n).classList.add('active');
     currentStep = n;
     if (n === 2) disablePassedDates();
+    if (n === 5) renderSummary();
     updateProgress();
     window.scrollTo({ top: 0, behavior: 'smooth' });
     document.getElementById('cartBar').style.display = (n === 1) ? 'flex' : 'none';
