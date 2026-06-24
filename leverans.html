@@ -273,6 +273,18 @@
       orders.map(orderCard).join('');
   }
 
+  const MAPS = [
+    { area: 'strandhaga',            url: 'https://maps.app.goo.gl/G3tTQotMpNoT9t6f8' },
+    { area: 'mellersta knebildstorp', url: 'https://maps.app.goo.gl/ipoi1HpdiD2sjRAAA' },
+    { area: 'gamla knebildstorp',    url: 'https://maps.app.goo.gl/Uy8N4bSNjsMoiVCs7' },
+  ];
+  function mapsLink(addr) {
+    const a = String(addr || '').toLowerCase();
+    const m = MAPS.find(x => a.includes(x.area));
+    if (!m) return '';
+    return `<a href="${m.url}" target="_blank" style="margin-left:4px;font-size:16px;text-decoration:none;" title="Öppna i Google Maps">🗺️</a>`;
+  }
+
   function orderCard(o) {
     const id = o['Ordernr'] || '';
     const lev = String(o['Levererad']).toUpperCase() === 'JA';
@@ -290,7 +302,7 @@
     <div class="order-card ${bothDone?'both-done':''}" id="card-${id}">
       <div class="order-top">
         <div class="order-name">${o['Namn'] || '—'}</div>
-        <div class="order-addr">📍 ${o['Adress'] || '—'}</div>
+        <div class="order-addr">📍 ${o['Adress'] || '—'} ${mapsLink(o['Adress'])}</div>
         <div class="order-contact">📱 <a href="tel:${o['Mobilnummer']}" style="color:var(--mid);text-decoration:none">${o['Mobilnummer'] || '—'}</a> &nbsp;·&nbsp; ${id}</div>
       </div>
       <div class="order-products">
