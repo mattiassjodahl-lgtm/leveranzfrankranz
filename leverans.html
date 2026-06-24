@@ -199,17 +199,31 @@
     renderOrders();
   }
 
-  async function loadOrders() {
+  function loadOrders() {
     document.getElementById('ordersWrap').innerHTML = '<div class="state-msg"><p>Laddar...</p></div>';
-    try {
-      const res = await fetch(SCRIPT_URL);
-      const json = await res.json();
-      allOrders = json.orders || [];
-      renderOrders();
-    } catch(err) {
+    const cbName = 'jsonp_' + Date.now();
+    const script = document.createElement('script');
+    const timeout = setTimeout(() => {
+      delete window[cbName];
+      document.head.removeChild(script);
       document.getElementById('ordersWrap').innerHTML =
         '<div class="state-msg"><div class="icon">⚠️</div><p>Kunde inte ladda.<br>Kontrollera nätet och försök igen.</p></div>';
-    }
+    }, 10000);
+    window[cbName] = function(json) {
+      clearTimeout(timeout);
+      delete window[cbName];
+      document.head.removeChild(script);
+      allOrders = json.orders || [];
+      renderOrders();
+    };
+    script.src = SCRIPT_URL + '?callback=' + cbName;
+    script.onerror = () => {
+      clearTimeout(timeout);
+      delete window[cbName];
+      document.getElementById('ordersWrap').innerHTML =
+        '<div class="state-msg"><div class="icon">⚠️</div><p>Kunde inte ladda.<br>Försök igen.</p></div>';
+    };
+    document.head.appendChild(script);
   }
 
   function renderOrders() {

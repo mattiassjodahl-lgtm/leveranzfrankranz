@@ -14,27 +14,40 @@ var HEADERS = [
   'Delsumma', 'Leveransavgift', 'Totalt', 'Meddelande', 'Betalad (✓)', 'Levererad'
 ];
 
-// ── doGet: läser ordrar för leveransvyn ─────────────────────────
+// ── doGet: läser ordrar för leveransvyn (stöder JSONP via ?callback=) ──
 function doGet(e) {
   try {
     var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
     var data = sheet.getDataRange().getValues();
-    if (data.length <= 1) {
-      return jsonOut({ status: 'ok', orders: [] });
-    }
-    var headers = data[0];
     var orders = [];
-    for (var i = 1; i < data.length; i++) {
-      var row = data[i];
-      var order = { _row: i + 1 };
-      for (var j = 0; j < headers.length; j++) {
-        order[headers[j]] = row[j];
+    if (data.length > 1) {
+      var headers = data[0];
+      for (var i = 1; i < data.length; i++) {
+        var row = data[i];
+        var order = { _row: i + 1 };
+        for (var j = 0; j < headers.length; j++) {
+          order[headers[j]] = row[j];
+        }
+        orders.push(order);
       }
-      orders.push(order);
     }
-    return jsonOut({ status: 'ok', orders: orders });
+    var result = JSON.stringify({ status: 'ok', orders: orders });
+    var callback = e && e.parameter && e.parameter.callback;
+    if (callback) {
+      return ContentService.createTextOutput(callback + '(' + result + ')')
+        .setMimeType(ContentService.MimeType.JAVASCRIPT);
+    }
+    return ContentService.createTextOutput(result)
+      .setMimeType(ContentService.MimeType.JSON);
   } catch (err) {
-    return jsonOut({ status: 'error', message: err.toString() });
+    var errResult = JSON.stringify({ status: 'error', message: err.toString() });
+    var callback = e && e.parameter && e.parameter.callback;
+    if (callback) {
+      return ContentService.createTextOutput(callback + '(' + errResult + ')')
+        .setMimeType(ContentService.MimeType.JAVASCRIPT);
+    }
+    return ContentService.createTextOutput(errResult)
+      .setMimeType(ContentService.MimeType.JSON);
   }
 }
 
