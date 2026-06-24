@@ -566,7 +566,7 @@
     const totalAll = (sub + 15) * n;
     const payloads = state.selectedDates.map((d, i) => {
       const orderId = n > 1 ? baseId + '-' + (i + 1) : baseId;
-      const payload = { orderId, timestamp: new Date().toISOString(), namn: state.namn, mobil: state.mobil, note: state.note, leveransdag: d.date, leveransdagLabel: d.label, adress: state.address, subtotal: sub, leveransavgift: 15, total: sub + 15 };
+      const payload = { orderId, timestamp: new Date().toLocaleString('sv-SE', { timeZone: 'Europe/Stockholm' }), namn: state.namn, mobil: state.mobil, note: state.note, leveransdag: d.date, leveransdagLabel: d.label, adress: state.address, subtotal: sub, leveransavgift: 15, total: sub + 15 };
       PRODUCTS.forEach(p => { payload[p.id] = state.quantities[p.id] || 0; });
       return payload;
     });
