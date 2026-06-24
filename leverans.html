@@ -231,13 +231,11 @@
     const orders = allOrders.filter(o => {
       const dag = String(o['Leveransdag'] || '');
       if (!dag) return false;
-      // Exakt match mot label ("Torsdag 9 juli") eller datum ("2026-07-09")
-      if (dag === (activeDateObj?.label || '') || dag === activeDate) return true;
-      // Google Sheets returnerar datum som ISO-sträng
+      // Exakt match mot ISO-datum ("2026-07-12") — Apps Script konverterar alltid till detta
+      if (dag === activeDate) return true;
+      // Fallback: match mot label ("Söndag 12 juli") eller ISO med tid
+      if (dag === (activeDateObj?.label || '')) return true;
       if (dag.startsWith(activeDate)) return true;
-      // Partiell match mot label (case-insensitive)
-      const label = (activeDateObj?.label || '').toLowerCase();
-      if (label && dag.toLowerCase().includes(label.split(' ').slice(-2).join(' '))) return true;
       return false;
     });
 

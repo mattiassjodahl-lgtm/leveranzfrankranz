@@ -26,7 +26,11 @@ function doGet(e) {
         var row = data[i];
         var order = { _row: i + 1 };
         for (var j = 0; j < headers.length; j++) {
-          order[headers[j]] = row[j];
+          var val = row[j];
+          if (val instanceof Date) {
+            val = Utilities.formatDate(val, 'Europe/Stockholm', 'yyyy-MM-dd');
+          }
+          order[headers[j]] = val;
         }
         orders.push(order);
       }
