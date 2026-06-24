@@ -569,14 +569,14 @@
       PRODUCTS.forEach(p => { payload[p.id] = state.quantities[p.id] || 0; });
       return payload;
     });
-    document.getElementById('loadingOverlay').classList.add('active');
+    showConfirmation(payloads, totalAll);
+    // Skicka ordrar i bakgrunden efter att bekräftelsesidan visats
     (async () => {
       for (const p of payloads) {
         try {
           await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(p) });
         } catch(e) {}
       }
-      showConfirmation(payloads, totalAll);
     })();
   }
 
