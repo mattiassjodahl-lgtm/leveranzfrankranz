@@ -59,6 +59,8 @@
     .date-btn.selected { border-color: var(--warm); background: var(--warm); color: var(--white); }
     .date-btn .day-name { font-size: 13px; font-weight: 600; }
     .date-btn .day-date { font-size: 12px; opacity: 0.75; margin-top: 1px; }
+    .date-btn.disabled { opacity: 0.35; cursor: not-allowed; pointer-events: none; border-style: dashed; }
+    .date-btn.disabled .day-date::after { content: ' — stängt'; font-size: 10px; }
     .area-tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 18px; }
     .area-tab { padding: 14px 8px; border: 1.5px solid var(--light); border-radius: 10px; background: var(--white); text-align: center; cursor: pointer; font-size: 14px; font-weight: 500; color: var(--dark); transition: all 0.2s; -webkit-tap-highlight-color: transparent; }
     .area-tab.selected { border-color: var(--warm); background: var(--warm); color: var(--white); }
@@ -427,6 +429,7 @@
     document.getElementById('step' + currentStep).classList.remove('active');
     document.getElementById('step' + n).classList.add('active');
     currentStep = n;
+    if (n === 2) disablePassedDates();
     updateProgress();
     window.scrollTo({ top: 0, behavior: 'smooth' });
     document.getElementById('cartBar').style.display = (n === 1) ? 'flex' : 'none';
@@ -463,6 +466,28 @@
   }
 
   function toStep2() { if (calcSubtotal() > 0) goTo(2); }
+
+  function disablePassedDates() {
+    const now = new Date();
+    const cutoffHour = 18, cutoffMin = 30;
+    document.querySelectorAll('.date-btn').forEach(btn => {
+      const date = new Date(btn.dataset.date);
+      const dayBefore = new Date(date);
+      dayBefore.setDate(dayBefore.getDate() - 1);
+      const isPastCutoff = now > dayBefore &&
+        (now.getFullYear() > dayBefore.getFullYear() ||
+         now.getMonth() > dayBefore.getMonth() ||
+         now.getDate() > dayBefore.getDate() ||
+         (now.getDate() === dayBefore.getDate() && now.getMonth() === dayBefore.getMonth() &&
+          (now.getHours() > cutoffHour || (now.getHours() === cutoffHour && now.getMinutes() >= cutoffMin))));
+      if (isPastCutoff) {
+        btn.classList.add('disabled');
+        // Ta bort från valda datum om det råkade vara valt
+        const idx = state.selectedDates.findIndex(d => d.date === btn.dataset.date);
+        if (idx >= 0) state.selectedDates.splice(idx, 1);
+      }
+    });
+  }
 
   function selectDate(el) {
     const date = el.dataset.date, label = el.dataset.label;
