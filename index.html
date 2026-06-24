@@ -459,10 +459,10 @@
   function updateCartBar() {
     const sub = calcSubtotal();
     const items = PRODUCTS.reduce((n, p) => n + (state.quantities[p.id] || 0), 0);
-    document.getElementById('cartTotal').textContent = sub + ' kr';
+    document.getElementById('cartTotal').textContent = sub > 0 ? sub + ' kr (' + items + ' st)' : '0 kr';
     const btn = document.getElementById('cartBtn');
     btn.disabled = (sub === 0);
-    btn.textContent = items > 0 ? 'Välj datum (' + items + ' st) →' : 'Välj datum →';
+    btn.textContent = 'Välj datum →';
   }
 
   function toStep2() { if (calcSubtotal() > 0) goTo(2); }
