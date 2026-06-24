@@ -2,6 +2,6 @@
   "name": "leveranz-fran-kranz",
   "version": "1.0.0",
   "scripts": {
-    "start": "npx serve . --single --listen $PORT"
+    "start": "npx serve . --listen $PORT"
   }
 }
