@@ -542,11 +542,14 @@
       return payload;
     });
     document.getElementById('loadingOverlay').classList.add('active');
-    Promise.all(payloads.map(p =>
-      fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(p) })
-        .catch(() => {})
-    )).then(() => showConfirmation(payloads, totalAll))
-      .catch(() => showConfirmation(payloads, totalAll));
+    (async () => {
+      for (const p of payloads) {
+        try {
+          await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(p) });
+        } catch(e) {}
+      }
+      showConfirmation(payloads, totalAll);
+    })();
   }
 
   function generateSwishQR(amount, orderId) {
