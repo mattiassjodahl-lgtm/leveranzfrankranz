@@ -366,13 +366,14 @@
   <p class="confirm-sub">Swisha till numret nedan senast kl 18:00 kvällen<br>innan din leveransdag — så ses vi!</p>
   <div class="swish-card">
     <div class="swish-logo">SWISH</div>
-    <div id="swishQrWrap" style="background:#fff;border-radius:10px;padding:12px;margin:10px auto 14px;width:fit-content;display:none">
-      <div id="swishQr"></div>
-    </div>
-    <div class="swish-to">Eller swisha manuellt till</div>
-    <div class="swish-number" id="confSwishNr">— — —</div>
     <div class="swish-amount-label">Belopp att betala</div>
     <div class="swish-amount" id="confAmount">— kr</div>
+    <a id="swishDeepLink" href="#" style="display:block;margin:18px 0 6px;background:#ffffff;color:#2F4399;border-radius:12px;padding:15px 20px;font-family:'Poppins',sans-serif;font-weight:700;font-size:17px;text-align:center;text-decoration:none;letter-spacing:0.3px;">📲 Öppna i Swish</a>
+    <div class="swish-to" style="margin-top:14px;opacity:0.7;font-size:12px;">Eller scanna QR / swisha manuellt till</div>
+    <div class="swish-number" id="confSwishNr">— — —</div>
+    <div id="swishQrWrap" style="background:#fff;border-radius:10px;padding:12px;margin:10px auto 0;width:fit-content;display:none">
+      <div id="swishQr"></div>
+    </div>
     <div class="swish-deadline"><strong>⏰ Betala senast kl 18:00</strong>kvällen innan din leveransdag</div>
   </div>
   <div class="notice-box" style="text-align:left">
@@ -589,6 +590,7 @@
       message: { value: orderId, editable: false }
     });
     var swishUrl = 'swish://payment?data=' + encodeURIComponent(swishData);
+    document.getElementById('swishDeepLink').href = swishUrl;
     var qrDiv = document.getElementById('swishQr');
     qrDiv.innerHTML = '';
     new QRCode(qrDiv, {
