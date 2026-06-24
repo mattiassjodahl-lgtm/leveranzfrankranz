@@ -230,7 +230,15 @@
     const activeDateObj = DATES.find(d => d.date === activeDate);
     const orders = allOrders.filter(o => {
       const dag = String(o['Leveransdag'] || '');
-      return dag === (activeDateObj?.label || '') || dag === activeDate;
+      if (!dag) return false;
+      // Exakt match mot label ("Torsdag 9 juli") eller datum ("2026-07-09")
+      if (dag === (activeDateObj?.label || '') || dag === activeDate) return true;
+      // Google Sheets returnerar datum som ISO-sträng
+      if (dag.startsWith(activeDate)) return true;
+      // Partiell match mot label (case-insensitive)
+      const label = (activeDateObj?.label || '').toLowerCase();
+      if (label && dag.toLowerCase().includes(label.split(' ').slice(-2).join(' '))) return true;
+      return false;
     });
 
     const levCount = orders.filter(o => String(o['Levererad']).toUpperCase() === 'JA').length;
