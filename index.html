@@ -393,6 +393,9 @@
     <strong style="color:var(--dark)">Mattias Sjödahl — 072-182 69 94</strong><br>
     <strong style="color:var(--dark)">Noomi Sjödahl — 079-322 61 26</strong>
   </p>
+  <button onclick="location.reload()" style="margin-top:20px;width:100%;max-width:400px;background:none;border:1.5px solid var(--light);border-radius:10px;padding:13px;font-family:'Poppins',sans-serif;font-size:14px;color:var(--mid);cursor:pointer;">
+    Gör en ny beställning
+  </button>
 </div>
 
 <div class="loading-overlay" id="loadingOverlay">
@@ -574,6 +577,8 @@
   }
 
   function showConfirmation(payloads, totalAll) {
+    state = { quantities: {}, selectedDates: [], areaType: null, address: '', namn: '', mobil: '', note: '' };
+    updateCartBar();
     document.getElementById('loadingOverlay').classList.remove('active');
     document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
     document.getElementById('progressBar').style.display = 'none';
