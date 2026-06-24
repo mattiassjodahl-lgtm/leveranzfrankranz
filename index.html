@@ -105,7 +105,36 @@
 <header>
   <h1>Leveranz från Kranz</h1>
   <p>Nybakta bullar från Krantz Brödbod — hemleverans direkt till dörren</p>
+  <button onclick="toggleOmOss()" style="margin-top:8px;background:none;border:1px solid var(--light);border-radius:20px;padding:5px 14px;font-family:'Poppins',sans-serif;font-size:12px;color:var(--mid);cursor:pointer;">Om oss</button>
 </header>
+
+<!-- OM OSS -->
+<div id="omOss" style="display:none;max-width:520px;margin:0 auto;padding:24px 20px 32px;border-bottom:1px solid var(--light);">
+  <h2 style="font-family:'Lora',serif;font-size:20px;color:var(--dark);margin-bottom:16px;">Om oss</h2>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:20px;">
+    <img src="Sk%C3%A4rmavbild%202026-06-22%20kl.%2010.36.13.png" alt="Barnen" style="width:100%;aspect-ratio:3/4;object-fit:contain;object-position:top;background:var(--cream);border-radius:10px;">
+    <img src="Sk%C3%A4rmavbild%202026-06-22%20kl.%2010.37.18.png" alt="Barnen" style="width:100%;aspect-ratio:3/4;object-fit:contain;object-position:top;background:var(--cream);border-radius:10px;">
+  </div>
+
+  <p style="font-size:14px;line-height:1.75;color:var(--dark);font-weight:300;">
+    Hej! Vi som levererar heter <strong>Noomi, Nellie, Max, Jamie och Leija</strong>. Vi bor på stugområdena och detta är vårt sommarjobb. Vi kommer att börja packa bullar kl. 7 på morgonen och levererar sen så fort vi kan.
+  </p>
+  <p style="font-size:14px;line-height:1.75;color:var(--dark);font-weight:300;margin-top:12px;">
+    Hjälp oss gärna genom att vara tydliga med vart ni vill att bullarna ska läggas. Vi är nervösa för fåglar, så någon form av låda hade varit bra. 😄
+  </p>
+  <p style="font-size:14px;line-height:1.75;color:var(--dark);font-weight:300;margin-top:12px;">
+    Tack för att ni stöttar oss och vårt lokala bageri!
+  </p>
+
+  <div style="margin-top:20px;background:var(--white);border-radius:10px;padding:16px;border:1px solid var(--light);">
+    <div style="font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--warm);margin-bottom:10px;">Kontakt</div>
+    <div style="font-size:14px;color:var(--dark);margin-bottom:6px;">📱 Noomi: <a href="tel:0793226126" style="color:var(--warm);text-decoration:none;font-weight:500;">079-322 61 26</a></div>
+    <div style="font-size:14px;color:var(--dark);">📱 Mattias (barnens pappa): <a href="tel:0721826994" style="color:var(--warm);text-decoration:none;font-weight:500;">072-182 69 94</a></div>
+  </div>
+
+  <button onclick="toggleOmOss()" style="margin-top:20px;width:100%;background:var(--warm);color:var(--white);border:none;border-radius:10px;padding:13px;font-family:'Poppins',sans-serif;font-size:15px;font-weight:600;cursor:pointer;">Stäng ↑</button>
+</div>
 
 <div class="progress" id="progressBar">
   <div class="ps active" id="ps1"></div>
@@ -200,12 +229,12 @@
     </div>
   </div>
   <div class="week-group">
-    <div class="week-label">Vecka 30 — juli</div>
+    <div class="week-label">Vecka 29 — juli</div>
     <div class="date-grid">
-      <div class="date-btn" data-date="2026-07-23" data-label="Torsdag 23 juli" onclick="selectDate(this)"><div class="day-name">Torsdag</div><div class="day-date">23 juli</div></div>
-      <div class="date-btn" data-date="2026-07-24" data-label="Fredag 24 juli" onclick="selectDate(this)"><div class="day-name">Fredag</div><div class="day-date">24 juli</div></div>
-      <div class="date-btn" data-date="2026-07-25" data-label="Lördag 25 juli" onclick="selectDate(this)"><div class="day-name">Lördag</div><div class="day-date">25 juli</div></div>
-      <div class="date-btn" data-date="2026-07-26" data-label="Söndag 26 juli" onclick="selectDate(this)"><div class="day-name">Söndag</div><div class="day-date">26 juli</div></div>
+      <div class="date-btn" data-date="2026-07-16" data-label="Torsdag 16 juli" onclick="selectDate(this)"><div class="day-name">Torsdag</div><div class="day-date">16 juli</div></div>
+      <div class="date-btn" data-date="2026-07-17" data-label="Fredag 17 juli" onclick="selectDate(this)"><div class="day-name">Fredag</div><div class="day-date">17 juli</div></div>
+      <div class="date-btn" data-date="2026-07-18" data-label="Lördag 18 juli" onclick="selectDate(this)"><div class="day-name">Lördag</div><div class="day-date">18 juli</div></div>
+      <div class="date-btn" data-date="2026-07-19" data-label="Söndag 19 juli" onclick="selectDate(this)"><div class="day-name">Söndag</div><div class="day-date">19 juli</div></div>
     </div>
   </div>
   <div class="week-group">
@@ -557,6 +586,13 @@
     document.getElementById('confOrderId').textContent = 'Order: ' + baseId;
     document.getElementById('confirmation').classList.add('active');
     window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function toggleOmOss() {
+    const el = document.getElementById('omOss');
+    const isOpen = el.style.display !== 'none';
+    el.style.display = isOpen ? 'none' : 'block';
+    if (!isOpen) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
   updateCartBar();
