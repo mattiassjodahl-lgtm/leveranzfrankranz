@@ -241,6 +241,18 @@
       return false;
     });
 
+    const AREA_ORDER = ['strandhaga', 'mellersta knebildstorp', 'gamla knebildstorp'];
+    orders.sort((a, b) => {
+      const aAddr = String(a['Adress'] || '').toLowerCase();
+      const bAddr = String(b['Adress'] || '').toLowerCase();
+      const aIdx = AREA_ORDER.findIndex(area => aAddr.includes(area));
+      const bIdx = AREA_ORDER.findIndex(area => bAddr.includes(area));
+      const aRank = aIdx === -1 ? 99 : aIdx;
+      const bRank = bIdx === -1 ? 99 : bIdx;
+      if (aRank !== bRank) return aRank - bRank;
+      const getNum = addr => { const m = addr.match(/(\d+)/); return m ? parseInt(m[1]) : 9999; };
+      return getNum(aAddr) - getNum(bAddr);
+    });
     const levCount = orders.filter(o => String(o['Levererad']).toUpperCase() === 'JA').length;
     const betCount = orders.filter(o => {
       const v = String(o['Betalad (✓)']).toUpperCase();
