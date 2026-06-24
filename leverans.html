@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Leveranser – Leveranz från Kranz</title>
+  <link href="https://fonts.googleapis.com/css2?family=Lora:wght@700&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --cream: #FAFAF5; --warm: #8B6F55; --dark: #2A1A10;
+      --mid: #6B4F3A; --light: #D9CCBC; --white: #ffffff;
+      --green: #2d7d46; --green-bg: #e8f5ed; --green-border: #b7e1cd;
+    }
+    body { background: var(--cream); color: var(--dark); font-family: 'Poppins', sans-serif; min-height: 100vh; -webkit-font-smoothing: antialiased; }
+
+    /* ── PIN ── */
+    #pinScreen { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; padding: 20px; }
+    .pin-logo { font-family: 'Lora', serif; font-size: 22px; font-weight: 700; color: var(--dark); margin-bottom: 4px; }
+    .pin-sub { font-size: 13px; color: var(--mid); margin-bottom: 36px; font-weight: 300; }
+    .pin-dots { display: flex; gap: 18px; margin-bottom: 36px; }
+    .pin-dot { width: 18px; height: 18px; border-radius: 50%; border: 2px solid var(--light); background: var(--white); transition: all 0.15s; }
+    .pin-dot.filled { background: var(--warm); border-color: var(--warm); }
+    .pin-dot.error { background: #e74c3c; border-color: #e74c3c; animation: shake 0.4s; }
+    @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-6px)} 75%{transform:translateX(6px)} }
+    .pin-pad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; width: 100%; max-width: 280px; }
+    .pin-btn { height: 70px; border-radius: 14px; border: 1.5px solid var(--light); background: var(--white); font-family: 'Poppins', sans-serif; font-size: 24px; font-weight: 500; color: var(--dark); cursor: pointer; display: flex; align-items: center; justify-content: center; -webkit-tap-highlight-color: transparent; transition: background 0.1s; user-select: none; }
+    .pin-btn:active { background: var(--light); }
+    .pin-btn.empty { border: none; background: none; cursor: default; pointer-events: none; }
+
+    /* ── MAIN ── */
+    #mainScreen { display: none; }
+    .top-bar { background: var(--white); border-bottom: 1px solid var(--light); padding: 14px 16px; display: flex; align-items: center; justify-content: space-between; }
+    .top-bar h1 { font-family: 'Lora', serif; font-size: 19px; font-weight: 700; color: var(--dark); }
+    .top-bar-right { display: flex; gap: 8px; align-items: center; }
+    .icon-btn { background: none; border: 1px solid var(--light); border-radius: 20px; padding: 5px 12px; font-family: 'Poppins', sans-serif; font-size: 12px; color: var(--mid); cursor: pointer; -webkit-tap-highlight-color: transparent; }
+
+    /* Date tabs */
+    .tabs-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; background: var(--white); border-bottom: 1px solid var(--light); scrollbar-width: none; }
+    .tabs-wrap::-webkit-scrollbar { display: none; }
+    .tabs { display: flex; padding: 0 8px; min-width: max-content; }
+    .tab { padding: 11px 14px; font-size: 13px; font-weight: 500; color: var(--mid); border: none; background: none; cursor: pointer; border-bottom: 3px solid transparent; white-space: nowrap; font-family: 'Poppins', sans-serif; -webkit-tap-highlight-color: transparent; transition: color 0.15s; }
+    .tab.active { color: var(--warm); border-bottom-color: var(--warm); font-weight: 600; }
+    .tab .week-tag { font-size: 10px; font-weight: 300; opacity: 0.7; display: block; }
+
+    /* Orders */
+    .orders-wrap { padding: 14px 14px 80px; max-width: 520px; margin: 0 auto; }
+    .orders-meta { font-size: 12px; color: var(--mid); margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
+    .refresh-btn { font-size: 12px; color: var(--warm); background: none; border: none; cursor: pointer; font-family: 'Poppins', sans-serif; font-weight: 500; padding: 0; }
+
+    .order-card { background: var(--white); border-radius: 12px; border: 1.5px solid var(--light); margin-bottom: 10px; overflow: hidden; transition: border-color 0.2s; }
+    .order-card.both-done { border-color: var(--green-border); background: #f6fbf8; }
+    .order-top { padding: 13px 14px 10px; }
+    .order-name { font-size: 16px; font-weight: 600; color: var(--dark); }
+    .order-addr { font-size: 13px; color: var(--warm); font-weight: 500; margin-top: 3px; }
+    .order-contact { font-size: 12px; color: var(--mid); margin-top: 2px; }
+    .order-products { padding: 8px 14px; background: var(--cream); border-top: 1px solid var(--light); border-bottom: 1px solid var(--light); }
+    .order-product { font-size: 13px; color: var(--dark); padding: 2px 0; }
+    .order-total { font-size: 12px; color: var(--mid); margin-top: 4px; }
+    .order-note { padding: 7px 14px; font-size: 12px; color: var(--mid); font-style: italic; border-bottom: 1px solid var(--light); background: #fffbf5; }
+    .order-actions { display: grid; grid-template-columns: 1fr 1fr; }
+    .act-btn { padding: 13px 8px; border: none; background: none; font-family: 'Poppins', sans-serif; font-size: 13px; font-weight: 600; cursor: pointer; -webkit-tap-highlight-color: transparent; color: var(--mid); transition: background 0.15s, color 0.15s; display: flex; align-items: center; justify-content: center; gap: 5px; }
+    .act-btn:first-child { border-right: 1px solid var(--light); }
+    .act-btn.done { background: var(--green-bg); color: var(--green); }
+    .act-btn:active { opacity: 0.7; }
+
+    .state-msg { text-align: center; padding: 48px 20px; color: var(--mid); }
+    .state-msg .icon { font-size: 40px; margin-bottom: 10px; }
+    .state-msg p { font-size: 14px; font-weight: 300; }
+  </style>
+</head>
+<body>
+
+<!-- PIN -->
+<div id="pinScreen">
+  <p class="pin-logo">Leveranz från Kranz</p>
+  <p class="pin-sub">Ange PIN-kod för att se leveranser</p>
+  <div class="pin-dots">
+    <div class="pin-dot" id="pd0"></div>
+    <div class="pin-dot" id="pd1"></div>
+    <div class="pin-dot" id="pd2"></div>
+    <div class="pin-dot" id="pd3"></div>
+  </div>
+  <div class="pin-pad">
+    <button class="pin-btn" onclick="pp('1')">1</button>
+    <button class="pin-btn" onclick="pp('2')">2</button>
+    <button class="pin-btn" onclick="pp('3')">3</button>
+    <button class="pin-btn" onclick="pp('4')">4</button>
+    <button class="pin-btn" onclick="pp('5')">5</button>
+    <button class="pin-btn" onclick="pp('6')">6</button>
+    <button class="pin-btn" onclick="pp('7')">7</button>
+    <button class="pin-btn" onclick="pp('8')">8</button>
+    <button class="pin-btn" onclick="pp('9')">9</button>
+    <button class="pin-btn empty"></button>
+    <button class="pin-btn" onclick="pp('0')">0</button>
+    <button class="pin-btn" onclick="pd()">⌫</button>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div id="mainScreen">
+  <div class="top-bar">
+    <h1>📦 Leveranser</h1>
+    <div class="top-bar-right">
+      <button class="icon-btn" onclick="loadOrders()">↻ Uppdatera</button>
+      <button class="icon-btn" onclick="lock()">Lås</button>
+    </div>
+  </div>
+  <div class="tabs-wrap"><div class="tabs" id="tabs"></div></div>
+  <div class="orders-wrap" id="ordersWrap">
+    <div class="state-msg"><p>Laddar...</p></div>
+  </div>
+</div>
+
+<script>
+  const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxnBmuPqWnKwsC4g6xhudUY2KCYAIyyZvZwUgp4drxhCuDhg-7tWggrzzoZnyP7R4j2nw/exec';
+  const PIN = '1234'; // ← Ändra PIN-kod här
+
+  const DATES = [
+    { date:'2026-07-09', label:'Torsdag 9 juli',  short:'Tors 9/7',  week:'v.28' },
+    { date:'2026-07-10', label:'Fredag 10 juli',  short:'Fre 10/7',  week:'v.28' },
+    { date:'2026-07-11', label:'Lördag 11 juli',  short:'Lör 11/7',  week:'v.28' },
+    { date:'2026-07-12', label:'Söndag 12 juli',  short:'Sön 12/7',  week:'v.28' },
+    { date:'2026-07-16', label:'Torsdag 16 juli', short:'Tors 16/7', week:'v.29' },
+    { date:'2026-07-17', label:'Fredag 17 juli',  short:'Fre 17/7',  week:'v.29' },
+    { date:'2026-07-18', label:'Lördag 18 juli',  short:'Lör 18/7',  week:'v.29' },
+    { date:'2026-07-19', label:'Söndag 19 juli',  short:'Sön 19/7',  week:'v.29' },
+    { date:'2026-07-30', label:'Torsdag 30 juli', short:'Tors 30/7', week:'v.31' },
+    { date:'2026-07-31', label:'Fredag 31 juli',  short:'Fre 31/7',  week:'v.31' },
+    { date:'2026-08-01', label:'Lördag 1 aug',    short:'Lör 1/8',   week:'v.31' },
+    { date:'2026-08-02', label:'Söndag 2 aug',    short:'Sön 2/8',   week:'v.31' },
+  ];
+
+  const PRODUCTS = [
+    { col:'Småfranska' }, { col:'Ostfralla' }, { col:'Källarfranska' },
+    { col:'Solros' }, { col:'Surdegsfralla ljus' }, { col:'Surdegsfralla mörk' },
+    { col:'Kanelbulle' }, { col:'Kardemummabulle' }
+  ];
+
+  let pin = '';
+  let allOrders = [];
+  let activeDate = '';
+
+  // ── PIN ──
+  function pp(d) {
+    if (pin.length >= 4) return;
+    pin += d;
+    renderDots();
+    if (pin.length === 4) checkPin();
+  }
+  function pd() { pin = pin.slice(0,-1); renderDots(); }
+  function renderDots() {
+    for (let i=0;i<4;i++) {
+      const el = document.getElementById('pd'+i);
+      el.classList.toggle('filled', i < pin.length);
+      el.classList.remove('error');
+    }
+  }
+  function checkPin() {
+    if (pin === PIN) {
+      document.getElementById('pinScreen').style.display = 'none';
+      document.getElementById('mainScreen').style.display = 'block';
+      init();
+    } else {
+      for (let i=0;i<4;i++) document.getElementById('pd'+i).classList.add('error');
+      setTimeout(() => { pin=''; renderDots(); }, 800);
+    }
+  }
+  function lock() {
+    pin=''; renderDots();
+    document.getElementById('mainScreen').style.display='none';
+    document.getElementById('pinScreen').style.display='flex';
+  }
+
+  // ── MAIN ──
+  function init() {
+    const today = new Date().toISOString().split('T')[0];
+    const next = DATES.find(d => d.date >= today) || DATES[0];
+    activeDate = next.date;
+    renderTabs();
+    loadOrders();
+  }
+
+  function renderTabs() {
+    document.getElementById('tabs').innerHTML = DATES.map(d =>
+      `<button class="tab ${d.date===activeDate?'active':''}" onclick="selectTab('${d.date}')">
+        <span class="week-tag">${d.week}</span>${d.short}
+      </button>`
+    ).join('');
+    setTimeout(() => {
+      const a = document.querySelector('.tab.active');
+      if (a) a.scrollIntoView({behavior:'smooth',block:'nearest',inline:'center'});
+    }, 80);
+  }
+
+  function selectTab(date) {
+    activeDate = date;
+    renderTabs();
+    renderOrders();
+  }
+
+  async function loadOrders() {
+    document.getElementById('ordersWrap').innerHTML = '<div class="state-msg"><p>Laddar...</p></div>';
+    try {
+      const res = await fetch(SCRIPT_URL);
+      const json = await res.json();
+      allOrders = json.orders || [];
+      renderOrders();
+    } catch(err) {
+      document.getElementById('ordersWrap').innerHTML =
+        '<div class="state-msg"><div class="icon">⚠️</div><p>Kunde inte ladda.<br>Kontrollera nätet och försök igen.</p></div>';
+    }
+  }
+
+  function renderOrders() {
+    const activeDateObj = DATES.find(d => d.date === activeDate);
+    const orders = allOrders.filter(o => {
+      const dag = String(o['Leveransdag'] || '');
+      return dag === (activeDateObj?.label || '') || dag === activeDate;
+    });
+
+    const levCount = orders.filter(o => String(o['Levererad']).toUpperCase() === 'JA').length;
+    const betCount = orders.filter(o => {
+      const v = String(o['Betalad (✓)']).toUpperCase();
+      return v === 'JA' || v === '✓';
+    }).length;
+
+    if (orders.length === 0) {
+      document.getElementById('ordersWrap').innerHTML =
+        '<div class="state-msg"><div class="icon">🎉</div><p>Inga beställningar för det här datumet.</p></div>';
+      return;
+    }
+
+    document.getElementById('ordersWrap').innerHTML =
+      `<div class="orders-meta">
+        <span>${orders.length} beställning${orders.length>1?'ar':''} &nbsp;·&nbsp; ${levCount} levererade &nbsp;·&nbsp; ${betCount} betalda</span>
+        <button class="refresh-btn" onclick="loadOrders()">↻ Ladda om</button>
+      </div>` +
+      orders.map(orderCard).join('');
+  }
+
+  function orderCard(o) {
+    const id = o['Ordernr'] || '';
+    const lev = String(o['Levererad']).toUpperCase() === 'JA';
+    const bet = ['JA','✓'].includes(String(o['Betalad (✓)']).toUpperCase().trim());
+    const bothDone = lev && bet;
+
+    const prods = PRODUCTS
+      .filter(p => Number(o[p.col]) > 0)
+      .map(p => `<div class="order-product">${p.col} × ${o[p.col]}</div>`)
+      .join('');
+
+    const note = o['Meddelande'] ? `<div class="order-note">💬 ${o['Meddelande']}</div>` : '';
+
+    return `
+    <div class="order-card ${bothDone?'both-done':''}" id="card-${id}">
+      <div class="order-top">
+        <div class="order-name">${o['Namn'] || '—'}</div>
+        <div class="order-addr">📍 ${o['Adress'] || '—'}</div>
+        <div class="order-contact">📱 <a href="tel:${o['Mobilnummer']}" style="color:var(--mid);text-decoration:none">${o['Mobilnummer'] || '—'}</a> &nbsp;·&nbsp; ${id}</div>
+      </div>
+      <div class="order-products">
+        ${prods}
+        <div class="order-total">Totalt: ${o['Totalt'] || '?'} kr</div>
+      </div>
+      ${note}
+      <div class="order-actions">
+        <button class="act-btn ${lev?'done':''}" onclick="toggle('${id}','lev',${lev})">
+          ${lev ? '✓ Levererad' : '○ Leverera'}
+        </button>
+        <button class="act-btn ${bet?'done':''}" onclick="toggle('${id}','bet',${bet})">
+          ${bet ? '✓ Betalad' : '○ Markera betald'}
+        </button>
+      </div>
+    </div>`;
+  }
+
+  function toggle(orderId, field, current) {
+    const newVal = !current;
+    const o = allOrders.find(x => x['Ordernr'] === orderId);
+    if (!o) return;
+    if (field === 'lev') o['Levererad'] = newVal ? 'JA' : '';
+    if (field === 'bet') o['Betalad (✓)'] = newVal ? 'JA' : '';
+    renderOrders();
+    fetch(SCRIPT_URL, {
+      method: 'POST', mode: 'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'update_status',
+        orderId,
+        ...(field === 'lev' ? { levererad: newVal } : {}),
+        ...(field === 'bet' ? { betalad: newVal }   : {})
+      })
+    });
+  }
+</script>
+</body>
+</html>
